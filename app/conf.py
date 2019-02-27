@@ -1,0 +1,10 @@
+import os
+
+VAULT_HOST = os.environ['VAULT_HOST']
+VAULT_TOKEN = os.environ['VAULT_TOKEN']
+VAULT_PATH = os.environ['VAULT_PATH']
+ENVIRONMENT = os.environ['ENVIRONMENT']
+PROJECT_NAME = os.environ['PROJECT_NAME']
+ECR_PATH = os.environ['ECR_PATH']
+EXECUTION_ROLE = os.environ['EXECUTION_ROLE']
+PROCFILE_LOCATION = os.environ['PROCFILE_LOCATION']

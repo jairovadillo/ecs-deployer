@@ -1,0 +1,11 @@
+version: '3.4'
+
+version: '3'
+
+services:
+  runner:
+    build: .
+    env_file:
+      - docker.env
+    volumes:
+      - .:/app

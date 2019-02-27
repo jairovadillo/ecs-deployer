@@ -1,0 +1,36 @@
+web:
+  web:
+    image: on_build
+    command: ddtrace-run gunicorn --pythonpath app,app/apps app.wsgi:application --workers 4 --threads 4 --preload -b 0.0.0.0:8000 --timeout 90
+    memory: 512
+    cpu: 256
+  logger:
+
+default:
+  command: python app/manage.py rqworker --worker-class django_rq_perseverance.RetryWorker default
+  memory: 512
+  cpu: 256
+commands:
+  command: python app/manage.py rqworker --worker-class django_rq_perseverance.RetryWorker commands
+  memory: 512
+  cpu: 256
+purchase_attempts:
+  command: python app/manage.py rqworker purchase_attempts
+  memory: 512
+  cpu: 256
+purchase_attempts_wallet_transactions:
+  command: python app/manage.py rqworker purchase_attempts_wallet_transactions
+  memory: 512
+  cpu: 256
+celery_worker:
+  command: celery -A app worker -E -l info -Q celery
+  memory: 512
+  cpu: 256
+celery_beat:
+  command: celery -A app beat -S redbeat.RedBeatScheduler
+  memory: 512
+  cpu: 256
+release:
+  command: python --version
+  memory: 512
+  cpu: 256
