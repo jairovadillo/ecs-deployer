@@ -1,5 +1,7 @@
 # ECS Deployer
 
+![doge](./doge.webp)
+
 ## What it does?
 
 - Grab environmental variables from Vault
@@ -11,16 +13,16 @@
 ## How to run it?
 
 - (Recommended) Create a `docker.env` file with all the environment variables needed:
-    - VAULT_HOST
-    - VAULT_TOKEN
-    - VAULT_PATH
-    - ENVIRONMENT
-    - PROJECT_NAME
-    - ECR_PATH
-    - PROCFILE_LOCATION
-    - ACCOUNT_ID
-    - ROLE_NAME
-    - EXECUTION_ROLE
+    - _VAULT_HOST_
+    - _VAULT_TOKEN_
+    - _VAULT_PATH_
+    - _ENVIRONMENT_
+    - _PROJECT_NAME_
+    - _ECR_PATH_
+    - _PROCFILE_LOCATION_
+    - _ACCOUNT_ID_
+    - _ROLE_NAME_
+    - _EXECUTION_ROLE_
 - Create a `procfile.yml` following this format:
 
     ```yaml
