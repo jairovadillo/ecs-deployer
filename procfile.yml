@@ -1,11 +1,7 @@
 web:
-  web:
-    image: on_build
-    command: ddtrace-run gunicorn --pythonpath app,app/apps app.wsgi:application --workers 4 --threads 4 --preload -b 0.0.0.0:8000 --timeout 90
-    memory: 512
-    cpu: 256
-  logger:
-
+  command: ddtrace-run gunicorn --pythonpath app,app/apps app.wsgi:application --workers 4 --threads 4 --preload -b 0.0.0.0:8000 --timeout 90
+  memory: 512
+  cpu: 256
 default:
   command: python app/manage.py rqworker --worker-class django_rq_perseverance.RetryWorker default
   memory: 512

@@ -9,6 +9,8 @@ import conf
 from task_definition import create_task_definition, create_container_definition
 from vault import get_configuration_vars
 
+logging.getLogger().setLevel(logging.INFO)
+
 
 def read_procfile(path):
     f = open(os.path.join(os.getcwd(), path), 'r')
@@ -25,7 +27,7 @@ def register_task_definitions():
     revisions = {}
 
     for service_name, values in procfile.items():
-        service_task_definition = create_task_definition(conf.EXECUTION_ROLE,
+        service_task_definition = create_task_definition(execution_role=conf.EXECUTION_ROLE,
                                                          cpu=values['cpu'],
                                                          memory=values['memory'])
 
@@ -74,13 +76,11 @@ def wait_for_release_task(task_tracker):
         time.sleep(5)
 
 
-def check_deployment():
-    pass
-
-
 def main():
     logging.info("Registering task definitions")
     revisions = register_task_definitions()
+
+    revisions.pop('release')
 
     logging.info("Running release command")
     task_tracker = run_release_cmd()
@@ -97,7 +97,7 @@ def main():
     aws.update_services(conf.ENVIRONMENT, conf.PROJECT_NAME, revisions)
 
     logging.info("Checking deployment")
-    check_deployment()
+    aws.check_deployment('{}-21b'.format(conf.ENVIRONMENT), conf.PROJECT_NAME, revisions)
 
 
 if __name__ == "__main__":
