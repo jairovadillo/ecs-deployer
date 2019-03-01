@@ -16,7 +16,6 @@ credentials = assumed_role_object['Credentials']
 
 client = boto3.client(
     'ecs',
-    region_name='eu-west-1',
     aws_access_key_id=credentials['AccessKeyId'],
     aws_secret_access_key=credentials['SecretAccessKey'],
     aws_session_token=credentials['SessionToken'],
@@ -56,9 +55,8 @@ def has_task_finished(cluster, task_arn, wait_seconds=5):
     return False
 
 
-def update_services(environment, project_name, revisions):
+def update_services(cluster, environment, project_name, revisions):
     for service_name, revision_number in revisions.items():
-        cluster = "{}-21b".format(environment)
         service = "{}-{}".format(project_name, service_name)
         task_definition = "{}-{}-{}:{}".format(environment,
                                                project_name,

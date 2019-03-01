@@ -12,34 +12,36 @@ from vault import get_configuration_vars
 logging.getLogger().setLevel(logging.INFO)
 
 
-def read_procfile(path='procfile.yml'):
+def read_procfile(procfile_name='procfile.yml'):
     try:
-        f = open(os.path.join(os.getcwd(), path), 'r')
+        path = './' + procfile_name
+        path = os.path.join(os.getcwd(), path)
+        f = open(path, 'r')
     except Exception as e:
         raise Exception("Cannot read procfile yaml!")
     else:
         return yaml.load(f)
 
 
-def register_task_definitions():
-    env_vars = get_configuration_vars(conf.VAULT_HOST,
-                                      conf.VAULT_TOKEN,
-                                      conf.VAULT_PATH)
+def register_task_definitions(procfile_name, vault_config, execution_role, environment, project_name, ecr_path):
+    env_vars = get_configuration_vars(vault_config['host'],
+                                      vault_config['token'],
+                                      vault_config['path'])
 
-    procfile = read_procfile()
+    procfile = read_procfile(procfile_name)
 
     revisions = {}
 
     for service_name, values in procfile.items():
-        service_task_definition = create_task_definition(execution_role=conf.EXECUTION_ROLE,
+        service_task_definition = create_task_definition(execution_role=execution_role,
                                                          cpu=values['cpu'],
                                                          memory=values['memory'])
 
         # for container in service
         container_definition = create_container_definition(env_vars,
-                                                           conf.ENVIRONMENT,
-                                                           conf.PROJECT_NAME,
-                                                           ecr_path=conf.ECR_PATH,
+                                                           environment,
+                                                           project_name,
+                                                           ecr_path=ecr_path,
                                                            container_name=service_name,
                                                            command=values['command'],
                                                            cpu=values['cpu'],
@@ -48,9 +50,10 @@ def register_task_definitions():
         service_task_definition['containerDefinitions'].append(container_definition)
         # end for
 
-        family = "{}-{}-{}".format(conf.ENVIRONMENT,
-                                   conf.PROJECT_NAME,
+        family = "{}-{}-{}".format(environment,
+                                   project_name,
                                    service_name)
+        # TODO: handle errors
         revision = aws.register_task_definition(service_task_definition,
                                                 family)
 
@@ -59,23 +62,20 @@ def register_task_definitions():
     return revisions
 
 
-def run_release_cmd():
-    procfile = read_procfile(conf.PROCFILE_LOCATION)
+def run_release_cmd(procfile_name, cluster, environment, project_name):
+    procfile = read_procfile(procfile_name)
 
     if 'release' not in procfile.keys():
         return None
 
-    cluster = "{}-21b".format(conf.ENVIRONMENT)
-    service = "{}-web".format(conf.PROJECT_NAME)
-    task_definition = "{}-{}-release".format(conf.ENVIRONMENT,
-                                             conf.PROJECT_NAME)
+    service = "{}-web".format(project_name)
+    task_definition = "{}-{}-release".format(environment,
+                                             project_name)
 
     return aws.run_release_task(cluster, service, task_definition)
 
 
-def wait_for_release_task(task_tracker):
-    cluster = "{}-21b".format(conf.ENVIRONMENT)
-
+def wait_for_release_task(cluster, task_tracker):
     while not aws.has_task_finished(cluster, task_tracker):
         time.sleep(5)
 
@@ -117,23 +117,35 @@ def check_deployment(cluster, project_name, revisions):
 
 def main():
     logging.info("Registering task definitions")
-    revisions = register_task_definitions()
+    revisions = register_task_definitions(conf.PROCFILE_NAME,
+                                          {
+                                              'host': conf.VAULT_HOST,
+                                              'token': conf.VAULT_TOKEN,
+                                              'path': conf.VAULT_PATH
+                                          },
+                                          conf.EXECUTION_ROLE,
+                                          conf.ENVIRONMENT,
+                                          conf.PROJECT_NAME,
+                                          conf.ECR_PATH)
 
-    revisions.pop('release')
+    revisions.pop('release', None)
 
     logging.info("Running release command")
-    task_tracker = run_release_cmd()
+    task_tracker = run_release_cmd(conf.PROCFILE_NAME,
+                                   conf.CLUSTER_NAME,
+                                   conf.ENVIRONMENT,
+                                   conf.PROJECT_NAME)
 
     if task_tracker:
         try:
             logging.info("Waiting for release task to finish ({})".format(task_tracker))
-            wait_for_release_task(task_tracker)
+            wait_for_release_task(conf.CLUSTER_NAME, task_tracker)
         except Exception as e:
             logging.error("Error executing migrations: {}".format(e))
             raise e
 
     logging.info("Updating services")
-    aws.update_services(conf.ENVIRONMENT, conf.PROJECT_NAME, revisions)
+    aws.update_services(conf.CLUSTER_NAME, conf.ENVIRONMENT, conf.PROJECT_NAME, revisions)
 
     logging.info("Checking deployment")
     check_deployment('{}-21b'.format(conf.ENVIRONMENT), conf.PROJECT_NAME, revisions)
@@ -144,3 +156,4 @@ if __name__ == "__main__":
         main()
     except Exception as e:
         logging.critical(str(e))
+        raise Exception(e)
