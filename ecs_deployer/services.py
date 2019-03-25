@@ -1,34 +1,28 @@
 import logging
-import os
 import time
 
 import yaml
 
 import aws
-import conf
 from task_definition import create_task_definition, create_container_definition
 from vault import get_configuration_vars
 
-logging.getLogger().setLevel(logging.INFO)
 
-
-def read_procfile(procfile_name='procfile.yml'):
+def read_procfile(procfile_path):
     try:
-        path = './' + procfile_name
-        path = os.path.join(os.getcwd(), path)
-        f = open(path, 'r')
+        f = open(procfile_path, 'r')
     except Exception as e:
         raise Exception("Cannot read procfile yaml!")
     else:
         return yaml.load(f)
 
 
-def register_task_definitions(procfile_name, vault_config, execution_role, environment, project_name, ecr_path):
+def register_task_definitions(procfile_path, vault_config, execution_role, environment, project_name, ecr_path):
     env_vars = get_configuration_vars(vault_config['host'],
                                       vault_config['token'],
                                       vault_config['path'])
 
-    procfile = read_procfile(procfile_name)
+    procfile = read_procfile(procfile_path)
 
     revisions = {}
 
@@ -62,8 +56,8 @@ def register_task_definitions(procfile_name, vault_config, execution_role, envir
     return revisions
 
 
-def run_release_cmd(procfile_name, cluster, environment, project_name):
-    procfile = read_procfile(procfile_name)
+def run_release_cmd(procfile_path, cluster, environment, project_name):
+    procfile = read_procfile(procfile_path)
 
     if 'release' not in procfile.keys():
         return None
@@ -113,47 +107,3 @@ def check_deployment(cluster, project_name, revisions):
     else:
         logging.error("Timeout checking deployment! Services: {} not updated yet!".format(
             list(expeted_services_revision.keys())))
-
-
-def main():
-    logging.info("Registering task definitions")
-    revisions = register_task_definitions(conf.PROCFILE_NAME,
-                                          {
-                                              'host': conf.VAULT_HOST,
-                                              'token': conf.VAULT_TOKEN,
-                                              'path': conf.VAULT_PATH
-                                          },
-                                          conf.EXECUTION_ROLE,
-                                          conf.ENVIRONMENT,
-                                          conf.PROJECT_NAME,
-                                          conf.ECR_PATH)
-
-    revisions.pop('release', None)
-
-    logging.info("Running release command")
-    task_tracker = run_release_cmd(conf.PROCFILE_NAME,
-                                   conf.CLUSTER_NAME,
-                                   conf.ENVIRONMENT,
-                                   conf.PROJECT_NAME)
-
-    if task_tracker:
-        try:
-            logging.info("Waiting for release task to finish ({})".format(task_tracker))
-            wait_for_release_task(conf.CLUSTER_NAME, task_tracker)
-        except Exception as e:
-            logging.error("Error executing migrations: {}".format(e))
-            raise e
-
-    logging.info("Updating services")
-    aws.update_services(conf.CLUSTER_NAME, conf.ENVIRONMENT, conf.PROJECT_NAME, revisions)
-
-    logging.info("Checking deployment")
-    check_deployment('{}-21b'.format(conf.ENVIRONMENT), conf.PROJECT_NAME, revisions)
-
-
-if __name__ == "__main__":
-    try:
-        main()
-    except Exception as e:
-        logging.critical(str(e))
-        raise Exception(e)

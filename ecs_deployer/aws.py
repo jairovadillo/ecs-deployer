@@ -1,8 +1,10 @@
 import logging
-
+import math
 import boto3
 
 import conf
+
+MAX_N_DESCRIBE_SERVICES = 10
 
 client_sts = boto3.client('sts')
 
@@ -69,7 +71,7 @@ def update_services(cluster, environment, project_name, revisions):
                               taskDefinition=task_definition)
 
 
-def describe_services(cluster, services):
+def _describe_services_batch(cluster, services):
     response = client.describe_services(cluster=cluster,
                                         services=services)
     return {
@@ -79,3 +81,15 @@ def describe_services(cluster, services):
         }
         for service in response['services']
     }
+
+
+def describe_services(cluster, services):
+    n_requests = math.ceil(len(services) / MAX_N_DESCRIBE_SERVICES)
+    response = dict()
+
+    for i in range(0, n_requests):
+        services_batch = services[i * MAX_N_DESCRIBE_SERVICES:(i + 1) * MAX_N_DESCRIBE_SERVICES]
+        response_batch = _describe_services_batch(cluster, services_batch)
+        response.update(response_batch)
+
+    return response
