@@ -4,8 +4,8 @@ COPY requirements.txt /
 
 RUN pip install -r /requirements.txt
 
-COPY ./app/* /app/
+COPY ecs_deployer /app/ecs_deployer
 
 WORKDIR /app
 
-CMD ["python", "run.py"]
+ENTRYPOINT ["python", "ecs_deployer/run.py"]
