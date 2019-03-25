@@ -2,10 +2,14 @@ import logging
 import time
 
 import yaml
+from yaml import Loader
 
-import aws
+import conf
+from aws import AWSWrapper
 from task_definition import create_task_definition, create_container_definition
 from vault import get_configuration_vars
+
+aws = AWSWrapper.build(conf.ACCOUNT_ID, conf.ROLE_NAME)
 
 
 def read_procfile(procfile_path):
@@ -14,7 +18,7 @@ def read_procfile(procfile_path):
     except Exception as e:
         raise Exception("Cannot read procfile yaml!")
     else:
-        return yaml.load(f)
+        return yaml.load(f, Loader=Loader)
 
 
 def register_task_definitions(procfile_path, vault_config, execution_role, environment, project_name, ecr_path):
@@ -72,6 +76,10 @@ def run_release_cmd(procfile_path, cluster, environment, project_name):
 def wait_for_release_task(cluster, task_tracker):
     while not aws.has_task_finished(cluster, task_tracker):
         time.sleep(5)
+
+
+def update_services(cluster, environment, project_name, revisions):
+    aws.update_services(cluster, environment, project_name, revisions)
 
 
 def check_deployment(cluster, project_name, revisions):

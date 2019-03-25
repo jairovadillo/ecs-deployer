@@ -1,14 +1,13 @@
+import argparse
 import logging
 
-import aws
 import conf
-from services import register_task_definitions, run_release_cmd, wait_for_release_task, check_deployment
-import argparse
+from services import register_task_definitions, run_release_cmd, wait_for_release_task, check_deployment, \
+    update_services
 
 parser = argparse.ArgumentParser(description='Parse params for deployment')
 parser.add_argument("-p", "--procfile", type=str, required=True)
 parser.add_argument("-i", "--image", type=str, required=True)
-
 
 logging.getLogger().setLevel(logging.INFO)
 
@@ -43,7 +42,7 @@ def main(procfile_path: str, ecr_image: str) -> None:
             raise e
 
     logging.info("Updating services")
-    aws.update_services(conf.CLUSTER_NAME, conf.ENVIRONMENT, conf.PROJECT_NAME, revisions)
+    update_services(conf.CLUSTER_NAME, conf.ENVIRONMENT, conf.PROJECT_NAME, revisions)
 
     logging.info("Checking deployment")
     check_deployment('{}-21b'.format(conf.ENVIRONMENT), conf.PROJECT_NAME, revisions)
