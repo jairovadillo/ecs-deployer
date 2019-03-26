@@ -43,7 +43,8 @@ def register_task_definitions(procfile_path, vault_config, execution_role, envir
                                                            container_name=service_name,
                                                            command=values['command'],
                                                            cpu=values['cpu'],
-                                                           memory=values['memory'])
+                                                           memory=values['memory'],
+                                                           ports=values.get('ports'))
 
         service_task_definition['containerDefinitions'].append(container_definition)
         # end for
