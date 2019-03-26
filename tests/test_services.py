@@ -2,11 +2,10 @@ import os
 
 import pytest
 
-from ecs_deployer.services import read_procfile
-
 
 @pytest.mark.skip(reason="No way of currently testing this without commenting aws init from services.py")
 def test_read_good_procfile():
+    from ecs_deployer.services import read_procfile
     procfile_path = os.path.dirname(os.path.abspath(__file__)) + '/data/sample_procfile.yml'
     print(procfile_path)
 
