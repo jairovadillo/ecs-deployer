@@ -32,11 +32,13 @@ class AWSWrapper:
         task_description = self._client.describe_tasks(cluster=cluster, tasks=[task_arn])
 
         if task_description['tasks'][0]['lastStatus'] == 'STOPPED':
-            exit_code = task_description['tasks'][0]['containers'][0]['exitCode']
+            exit_code = task_description['tasks'][0]['containers'][0].get('exitCode')
+
             if exit_code == 0:
                 return True
             else:
-                raise Exception('Exit code not 0, got: {}'.format(exit_code))
+                raise Exception('Release task returned error code, reason: {}'.format(
+                    task_description['tasks'][0]['containers'][0]['reason']))
 
         return False
 
