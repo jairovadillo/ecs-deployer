@@ -14,9 +14,22 @@ def create_task_definition(execution_role, memory, cpu):
 
 
 def create_container_definition(env_vars, environment, project_name, container_name, ecr_path, command, cpu=256,
-                                memory=512):
+                                memory=512, ports=None):
     container_definition_name = "{}-{}".format(environment, project_name)
     log_path = "/ecs/{}-{}-{}".format(environment, project_name, container_name)
+
+    port_mappings = []
+
+    if ports:
+        for p in ports:
+            host_port = int(p.split(':')[0])
+            container_port = int(p.split(':')[1])
+
+            port_mappings.append({
+                "hostPort": host_port,
+                "protocol": "tcp",
+                "containerPort": container_port
+            })
 
     container_definition = {
         "environment": env_vars,
@@ -33,13 +46,7 @@ def create_container_definition(env_vars, environment, project_name, container_n
         },
         "cpu": cpu,
         "memory": memory,
-        "portMappings": [
-            {
-                "protocol": "tcp",
-                "containerPort": 8000,
-                "hostPort": 8000
-            }
-        ],
+        "portMappings": port_mappings,
         "command": parse_command(command),
         "essential": True,
         "volumesFrom": []

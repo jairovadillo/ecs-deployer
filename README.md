@@ -6,9 +6,13 @@
 
 - Grab environmental variables from Vault
 - Register new Task Definitions based on `procfile.yml`
-- Run a release phase
-- Update all services with the new task definitions
+- Run a release phase (migrations or whatever)
+- Update all ECS services with the new task definitions
 - Waits until all tasks/"perros" have the new task definition
+
+## Builds & CI
+
+DockerHub automatically tests and builds the image tags, check: 
 
 ## Preconditions:
 
@@ -22,6 +26,10 @@
 - FARGATE is being used
 - The image you want to deploy is already on ECR
 
+## Running tests
+
+`docker-compose -f docker-compose.test.yml up`
+
 ## How to run it?
 
 - (Recommended) Create a `docker.env` file with all the environment variables needed:
@@ -30,7 +38,6 @@
     - _VAULT_PATH_
     - _ENVIRONMENT_
     - _PROJECT_NAME_
-    - _ECR_PATH_
     - _AWS_ACCESS_KEY_ID_
     - _AWS_SECRET_ACCESS_KEY_
     - _AWS_DEFAULT_REGION_
@@ -38,7 +45,6 @@
     - _ROLE_NAME_
     - _EXECUTION_ROLE_
     - _CLUSTER_NAME_
-    - _PROCFILE_NAME_
     
 - Create a `procfile.yml` following this format:
 
@@ -47,6 +53,9 @@
       command: python run_server.py
       memory: 512
       cpu: 256
+      ports:
+        - 8000:8000
+        - 2222:2222
     service2:
       command: python run_worker.py
       memory: 1024
@@ -60,6 +69,7 @@
 - On your project root run:
 
     ```bash
-    docker run --env-file=docker.env -v $(pwd)/procfile.yml:/app/procfile.yml -it ecs_deployer
+    docker run --rm --env-file=local.env -v $(pwd)/ecs_deployer:/app/ecs_deployer -v $(pwd):/code -it ecs_deployer deploy -p /code/procfile.yml -i << ecr_path>>    
     ```
+    
 - Enjoy!
