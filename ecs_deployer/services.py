@@ -77,6 +77,7 @@ def run_release_cmd(procfile_path, cluster, environment, project_name):
 def wait_for_release_task(cluster, task_tracker):
     while not aws.has_task_finished(cluster, task_tracker):
         time.sleep(5)
+        logging.info('Release task still in progress...')
 
 
 def update_services(cluster, environment, project_name, revisions):
