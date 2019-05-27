@@ -3,6 +3,7 @@ import time
 
 import yaml
 from yaml import Loader
+import json
 
 import conf
 from aws import AWSWrapper
@@ -15,6 +16,15 @@ aws = AWSWrapper.build(conf.ACCOUNT_ID, conf.ROLE_NAME)
 def read_procfile(procfile_path):
     try:
         f = open(procfile_path, 'r')
+    except Exception as e:
+        raise Exception("Cannot read procfile yaml!")
+    else:
+        return yaml.load(f, Loader=Loader)
+
+
+def read_yaml(yaml_path):
+    try:
+        f = open(yaml_path, 'r')
     except Exception as e:
         raise Exception("Cannot read procfile yaml!")
     else:
@@ -59,6 +69,45 @@ def register_task_definitions(procfile_path, vault_config, execution_role, envir
         revisions[service_name] = revision
 
     return revisions
+
+
+def register_task_definitions_multi_container(container_definitions, vault_config, environment, project_name, ecr_path):
+    env_vars = get_configuration_vars(vault_config['host'],
+                                      vault_config['token'],
+                                      vault_config['path'])
+
+    definitions = read_yaml(container_definitions)
+
+    revisions = {}
+
+    for service_name, values in definitions.items():
+
+        for i in values['containerDefinitions']:
+            if i.get('environment', '') == '__ENV_VARS__':
+                i['environment'] = env_vars
+            elif i.get('image', '') == '__DOCKER_IMAGE__':
+                i['environment'] = ecr_path
+
+        values = replace(values, '__ENV__', environment)
+        values = replace(values, '__DD_API_KEY__', env_vars['DD_API_KEY'])
+
+        family = "{}-{}-{}".format(environment,
+                                   project_name,
+                                   service_name)
+
+        revision = aws.register_task_definition(values,
+                                                family)
+
+        revisions[service_name] = revision
+
+    return revisions
+
+
+def replace(dict, place_holder, value):
+    str = json.dumps(dict)
+    str.replace(place_holder, value)
+    modified_dict = json.loads(str)
+    return modified_dict
 
 
 def run_release_cmd(procfile_path, cluster, environment, project_name):
