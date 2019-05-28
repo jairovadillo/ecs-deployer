@@ -26,7 +26,7 @@ def read_yaml(yaml_path):
     try:
         f = open(yaml_path, 'r')
     except Exception as e:
-        raise Exception("Cannot read procfile yaml!")
+        raise Exception("Cannot read yaml!", yaml_path)
     else:
         return yaml.load(f, Loader=Loader)
 
@@ -71,7 +71,8 @@ def register_task_definitions(procfile_path, vault_config, execution_role, envir
     return revisions
 
 
-def register_task_definitions_multi_container(container_definitions, vault_config, execution_role, environment, project_name, ecr_path):
+def register_task_definitions_multi_container(container_definitions, vault_config, execution_role, environment,
+                                              project_name, ecr_path):
     env_vars = get_configuration_vars(vault_config['host'],
                                       vault_config['token'],
                                       vault_config['path'])
@@ -82,16 +83,7 @@ def register_task_definitions_multi_container(container_definitions, vault_confi
 
     for service_name, values in definitions.items():
 
-        for i in values['containerDefinitions']:
-            if i.get('environment', '') == '__ENV_VARS__':
-                i['environment'] = env_vars
-            elif i.get('image', '') == '__DOCKER_IMAGE__':
-                i['environment'] = ecr_path
-
-        values = replace(values, '__ENV__', environment)
-        values = replace(values, '__DD_API_KEY__', env_vars['DD_API_KEY'])
-        values = replace(values, '__DOCKER_IMAGE__', ecr_path)
-        values = replace(values, '__EXEC_ROLE__', execution_role)
+        values = replace_placeholder(values, env_vars, environment, ecr_path, execution_role)
 
         family = "{}-{}-{}".format(environment,
                                    project_name,
@@ -105,9 +97,15 @@ def register_task_definitions_multi_container(container_definitions, vault_confi
     return revisions
 
 
-def replace(dict, place_holder, value):
+def replace_placeholder(dict, env_vars, environment, ecr_path, execution_role):
+    for i in dict['containerDefinitions']:
+        if i.get('environment', '') == '__ENV_VARS__':
+            i['environment'] = env_vars
+
     str = json.dumps(dict)
-    str.replace(place_holder, value)
+    str = str.replace('__ENV__', environment)
+    str = str.replace('__DOCKER_IMAGE__', ecr_path)
+    str = str.replace('__EXEC_ROLE__', execution_role)
     modified_dict = json.loads(str)
     return modified_dict
 
