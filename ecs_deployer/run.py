@@ -52,6 +52,7 @@ def main(procfile_path: str, ecr_image: str, container_definitions: str) -> None
                                                                   'token': conf.VAULT_TOKEN,
                                                                   'path': conf.VAULT_PATH
                                                               },
+                                                              conf.EXECUTION_ROLE,
                                                               conf.ENVIRONMENT,
                                                               conf.PROJECT_NAME,
                                                               ecr_image)

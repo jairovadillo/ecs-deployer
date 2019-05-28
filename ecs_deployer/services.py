@@ -71,7 +71,7 @@ def register_task_definitions(procfile_path, vault_config, execution_role, envir
     return revisions
 
 
-def register_task_definitions_multi_container(container_definitions, vault_config, environment, project_name, ecr_path):
+def register_task_definitions_multi_container(container_definitions, vault_config, execution_role, environment, project_name, ecr_path):
     env_vars = get_configuration_vars(vault_config['host'],
                                       vault_config['token'],
                                       vault_config['path'])
@@ -90,6 +90,8 @@ def register_task_definitions_multi_container(container_definitions, vault_confi
 
         values = replace(values, '__ENV__', environment)
         values = replace(values, '__DD_API_KEY__', env_vars['DD_API_KEY'])
+        values = replace(values, '__DOCKER_IMAGE__', ecr_path)
+        values = replace(values, '__EXEC_ROLE__', execution_role)
 
         family = "{}-{}-{}".format(environment,
                                    project_name,
