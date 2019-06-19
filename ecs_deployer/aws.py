@@ -41,8 +41,7 @@ class AWSWrapper:
                 task_id = task_arn.split('/')[1]
 
                 raise Exception('Release task returned error code. Task logs: {}'.format(
-                    self._get_ecs_task_logs(task_name=task_name,
-                                        task_id=task_id)))
+                    self._get_ecs_task_logs(task_name=task_name, task_id=task_id)))
 
         return False
 
