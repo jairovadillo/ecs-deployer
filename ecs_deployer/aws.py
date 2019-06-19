@@ -115,4 +115,8 @@ class AWSWrapper:
             logStreamName='ecs/{}/{}'.format(task_name, task_id),
             startFromHead=True
         )
-        return [event['message'] for event in response['events']]
+
+        err_message = ''
+        for event in response['events']:
+            err_message += event['message'] + '\n'
+        return err_message
