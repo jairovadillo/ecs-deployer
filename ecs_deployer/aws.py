@@ -1,6 +1,5 @@
 import logging
 import math
-from botocore.exceptions import ClientError
 import boto3
 
 MAX_N_DESCRIBE_SERVICES = 10
@@ -115,7 +114,7 @@ class AWSWrapper:
                 logStreamName='ecs/{}/{}'.format(task_name, task_id),
                 startFromHead=True
             )
-        except ClientError as e:
+        except self._client_logs.exceptions.ClientError as e:
             return e.response['Error']['Code']
 
         err_message = ''
