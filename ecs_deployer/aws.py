@@ -1,6 +1,6 @@
 import logging
 import math
-
+from botocore.exceptions import ClientError
 import boto3
 
 MAX_N_DESCRIBE_SERVICES = 10
@@ -42,7 +42,7 @@ class AWSWrapper:
                 task_id = task_arn.split('/')[1]
 
                 raise Exception('Release task returned error code. Task logs: {}'.format(
-                    self._get_task_logs(task_name=task_name,
+                    self._get_ecs_task_logs(task_name=task_name,
                                         task_id=task_id)))
 
         return False
@@ -108,13 +108,15 @@ class AWSWrapper:
 
         return cls(client_ecs=client_ecs, client_logs=client_logs)
 
-    def _get_task_logs(self, task_name, task_id):
-
-        response = self._client_logs.get_log_events(
-            logGroupName='/ecs/{}-release'.format(task_name),
-            logStreamName='ecs/{}/{}'.format(task_name, task_id),
-            startFromHead=True
-        )
+    def _get_ecs_task_logs(self, task_name, task_id):
+        try:
+            response = self._client_logs.get_log_events(
+                logGroupName='/ecs/{}-release'.format(task_name),
+                logStreamName='ecs/{}/{}'.format(task_name, task_id),
+                startFromHead=True
+            )
+        except ClientError as e:
+            return e.response['Error']['Code']
 
         err_message = ''
         for event in response['events']:
