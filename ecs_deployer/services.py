@@ -117,3 +117,5 @@ def check_deployment(cluster, project_name, revisions):
     else:
         logging.error("Timeout checking deployment! Services: {} not updated yet!".format(
             list(expeted_services_revision.keys())))
+        raise Exception("timeout updating service task!")
+

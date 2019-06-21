@@ -48,6 +48,7 @@ def main(procfile_path: str, ecr_image: str) -> None:
     check_deployment('{}-21b'.format(conf.ENVIRONMENT), conf.PROJECT_NAME, revisions)
 
 
+
 if __name__ == "__main__":
     args, unknown = parser.parse_known_args()
 
