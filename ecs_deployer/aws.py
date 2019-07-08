@@ -1,27 +1,27 @@
 import logging
 import math
-
 import boto3
 
 MAX_N_DESCRIBE_SERVICES = 10
 
 
 class AWSWrapper:
-    def __init__(self, client):
-        self._client = client
+    def __init__(self, client_ecs, client_logs):
+        self._client_ecs = client_ecs
+        self._client_logs = client_logs
 
     def register_task_definition(self, task_definition, family):
-        response = self._client.register_task_definition(family=family,
+        response = self._client_ecs.register_task_definition(family=family,
                                                          **task_definition)
 
         return response['taskDefinition']['revision']
 
     def run_release_task(self, cluster, service, task_definition):
-        service_description = self._client.describe_services(cluster=cluster, services=[service])
+        service_description = self._client_ecs.describe_services(cluster=cluster, services=[service])
 
         network_configuration = service_description['services'][0]['networkConfiguration']
 
-        response = self._client.run_task(cluster=cluster,
+        response = self._client_ecs.run_task(cluster=cluster,
                                          taskDefinition=task_definition,
                                          launchType='FARGATE',
                                          networkConfiguration=network_configuration)
@@ -29,7 +29,7 @@ class AWSWrapper:
         return response['tasks'][0]['taskArn']
 
     def has_task_finished(self, cluster, task_arn, wait_seconds=5):
-        task_description = self._client.describe_tasks(cluster=cluster, tasks=[task_arn])
+        task_description = self._client_ecs.describe_tasks(cluster=cluster, tasks=[task_arn])
 
         if task_description['tasks'][0]['lastStatus'] == 'STOPPED':
             exit_code = task_description['tasks'][0]['containers'][0].get('exitCode')
@@ -37,8 +37,11 @@ class AWSWrapper:
             if exit_code == 0:
                 return True
             else:
-                raise Exception('Release task returned error code, reason: {}'.format(
-                    task_description['tasks'][0]['containers'][0]['reason']))
+                task_name = task_description['tasks'][0]['containers'][0].get('name')
+                task_id = task_arn.split('/')[1]
+
+                raise Exception('Release task returned error code. Task logs: {}'.format(
+                    self._get_ecs_task_logs(task_name=task_name, task_id=task_id)))
 
         return False
 
@@ -51,7 +54,7 @@ class AWSWrapper:
                                                    revision_number)
 
             logging.info("Updating service {} with td: {}".format(service, task_definition))
-            self._client.update_service(cluster=cluster,
+            self._client_ecs.update_service(cluster=cluster,
                                         service=service,
                                         taskDefinition=task_definition)
 
@@ -61,7 +64,7 @@ class AWSWrapper:
 
         for i in range(0, n_requests):
             services_batch = services[i * MAX_N_DESCRIBE_SERVICES:(i + 1) * MAX_N_DESCRIBE_SERVICES]
-            aws_response = self._client.describe_services(cluster=cluster,
+            aws_response = self._client_ecs.describe_services(cluster=cluster,
                                                           services=services_batch)
             response_batch = {
                 service['serviceName']: {
@@ -87,11 +90,33 @@ class AWSWrapper:
 
         credentials = assumed_role_object['Credentials']
 
-        client = boto3.client(
+        client_ecs = boto3.client(
             'ecs',
             aws_access_key_id=credentials['AccessKeyId'],
             aws_secret_access_key=credentials['SecretAccessKey'],
             aws_session_token=credentials['SessionToken'],
         )
 
-        return cls(client=client)
+        client_logs = boto3.client(
+            'logs',
+            aws_access_key_id=credentials['AccessKeyId'],
+            aws_secret_access_key=credentials['SecretAccessKey'],
+            aws_session_token=credentials['SessionToken'],
+        )
+
+        return cls(client_ecs=client_ecs, client_logs=client_logs)
+
+    def _get_ecs_task_logs(self, task_name, task_id):
+        try:
+            response = self._client_logs.get_log_events(
+                logGroupName='/ecs/{}-release'.format(task_name),
+                logStreamName='ecs/{}/{}'.format(task_name, task_id),
+                startFromHead=True
+            )
+        except self._client_logs.exceptions.ClientError as e:
+            return e.response['Error']['Code']
+
+        err_message = ''
+        for event in response['events']:
+            err_message += event['message'] + '\n'
+        return err_message
