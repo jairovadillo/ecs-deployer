@@ -1,7 +1,7 @@
 import logging
 import math
 import boto3
-from .waiters import GetEventLogWaiter
+from waiters import GetEventLogWaiter
 MAX_N_DESCRIBE_SERVICES = 10
 
 
