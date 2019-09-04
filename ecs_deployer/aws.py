@@ -1,7 +1,7 @@
 import logging
 import math
 import boto3
-
+from waiters import GetEventLogWaiter
 MAX_N_DESCRIBE_SERVICES = 10
 
 
@@ -38,10 +38,9 @@ class AWSWrapper:
                 return True
             else:
                 task_name = task_description['tasks'][0]['containers'][0].get('name')
-                task_id = task_arn.split('/')[1]
-
+                task_id = task_arn.split('/')[-1]
                 raise Exception('Release task returned error code. Task logs: {}'.format(
-                    self._get_ecs_task_logs(task_name=task_name, task_id=task_id)))
+                    self._get_ecs_task_logs(service=task_name, task_id=task_id)))
 
         return False
 
@@ -106,11 +105,21 @@ class AWSWrapper:
 
         return cls(client_ecs=client_ecs, client_logs=client_logs)
 
-    def _get_ecs_task_logs(self, task_name, task_id):
+    def _get_ecs_task_logs(self, service, task_id):
         try:
+
+            task_name = f'{service}-release'
+            log_group = f'/ecs/{task_name}'
+            log_stream = f'ecs/{service}/{task_id}'
+
+            GetEventLogWaiter.wait(log_group_name=log_group,
+                                   log_stream_name=log_stream,
+                                   aws_client=self._client_logs
+                                   )
+
             response = self._client_logs.get_log_events(
-                logGroupName='/ecs/{}-release'.format(task_name),
-                logStreamName='ecs/{}/{}'.format(task_name, task_id),
+                logGroupName=log_group,
+                logStreamName=log_stream,
                 startFromHead=True
             )
         except self._client_logs.exceptions.ClientError as e:

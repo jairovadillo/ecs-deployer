@@ -1,3 +1,4 @@
 boto3
 hvac
 pyyaml
+botocore
