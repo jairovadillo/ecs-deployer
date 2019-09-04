@@ -1,14 +1,13 @@
+import json
 import logging
 import time
 
-import yaml
-from yaml import Loader
-import json
-
 import conf
+import yaml
 from aws import AWSWrapper
 from task_definition import create_task_definition, create_container_definition
 from vault import get_configuration_vars
+from yaml import Loader
 
 aws = AWSWrapper.build(conf.ACCOUNT_ID, conf.ROLE_NAME)
 
@@ -117,6 +116,19 @@ def run_release_cmd(procfile_path, cluster, environment, project_name):
         return None
 
     service = "{}-web".format(project_name)
+    task_definition = "{}-{}-release".format(environment,
+                                             project_name)
+
+    return aws.run_release_task(cluster, service, task_definition)
+
+
+def run_release_cmd_multi_container(container_definitions, cluster, environment, project_name):
+    container = read_yaml(container_definitions)
+
+    if 'release' not in container.keys():
+        return None
+
+    service = "{}-release".format(project_name)
     task_definition = "{}-{}-release".format(environment,
                                              project_name)
 
