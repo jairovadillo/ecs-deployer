@@ -2,8 +2,7 @@ import argparse
 import logging
 
 import conf
-from services import register_task_definitions, run_release_cmd, \
-    wait_for_release_task, check_deployment, \
+from services import register_task_definitions, run_release_cmd, wait_for_release_task, check_deployment, \
     update_services
 
 parser = argparse.ArgumentParser(description='Parse params for deployment')
