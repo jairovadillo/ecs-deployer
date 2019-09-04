@@ -2,9 +2,9 @@ import argparse
 import logging
 
 import conf
-from services import register_task_definitions, register_task_definitions_multi_container, run_release_cmd, \
+from services import register_task_definitions, run_release_cmd, \
     wait_for_release_task, check_deployment, \
-    update_services, run_release_cmd_multi_container
+    update_services
 
 parser = argparse.ArgumentParser(description='Parse params for deployment')
 parser.add_argument("-p", "--procfile", type=str, required=True)
@@ -42,7 +42,6 @@ def main(procfile_path: str, ecr_image: str) -> None:
         except Exception as e:
             logging.error("Error executing migrations: {}".format(e))
             raise e
-
 
     logging.info("Updating services")
     update_services(conf.CLUSTER_NAME, conf.ENVIRONMENT, conf.PROJECT_NAME, revisions)
