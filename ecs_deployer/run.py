@@ -14,7 +14,6 @@ logging.getLogger().setLevel(logging.INFO)
 
 def main(procfile_path: str, ecr_image: str) -> None:
     logging.info("Registering task definitions")
-
     revisions = register_task_definitions(procfile_path,
                                           {
                                               'host': conf.VAULT_HOST,

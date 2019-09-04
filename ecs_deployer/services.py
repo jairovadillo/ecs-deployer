@@ -4,10 +4,10 @@ import time
 
 import conf
 import yaml
+from yaml import Loader
 from aws import AWSWrapper
 from task_definition import create_task_definition, create_container_definition
 from vault import get_configuration_vars
-from yaml import Loader
 
 aws = AWSWrapper.build(conf.ACCOUNT_ID, conf.ROLE_NAME)
 
