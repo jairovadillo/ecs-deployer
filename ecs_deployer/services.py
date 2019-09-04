@@ -128,7 +128,7 @@ def run_release_cmd_multi_container(container_definitions, cluster, environment,
     if 'release' not in container.keys():
         return None
 
-    service = "{}-release".format(project_name)
+    service = "{}-web".format(project_name)
     task_definition = "{}-{}-release".format(environment,
                                              project_name)
 
