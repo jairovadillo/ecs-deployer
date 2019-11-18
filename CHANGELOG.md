@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.1.0 (18-11-2019)
+
+### Changes:
+ - Add task role to avoid use access keys 
+
 ## 0.0.7 (12-07-2019) 
 
 #### Changes:

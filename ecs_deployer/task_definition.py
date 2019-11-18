@@ -1,6 +1,7 @@
-def create_task_definition(execution_role, memory, cpu):
+def create_task_definition(execution_role, memory, cpu, task_role=""):
     task_definition = {
         "networkMode": "awsvpc",
+        "taskRoleArn": task_role,
         "containerDefinitions": [],
         "executionRoleArn": execution_role,
         "requiresCompatibilities": [
