@@ -15,3 +15,5 @@ ROLE_NAME = os.environ['ROLE_NAME']
 CLUSTER_NAME = os.environ['CLUSTER_NAME']
 
 ENVIRONMENT = os.environ['ENVIRONMENT']
+
+TASK_ROLE = os.getenv('TASK_ROLE', f'arn:aws:iam::{ACCOUNT_ID}:role/ecs/{ENVIRONMENT}-{PROJECT_NAME}-ecs-task-role')

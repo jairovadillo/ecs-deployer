@@ -21,7 +21,7 @@ def read_procfile(procfile_path):
         return yaml.load(f, Loader=Loader)
 
 
-def register_task_definitions(procfile_path, vault_config, execution_role, environment, project_name, ecr_path):
+def register_task_definitions(procfile_path, vault_config, execution_role, environment, project_name, task_role, ecr_path):
     env_vars = get_configuration_vars(vault_config['host'],
                                       vault_config['token'],
                                       vault_config['path'])
@@ -33,7 +33,8 @@ def register_task_definitions(procfile_path, vault_config, execution_role, envir
     for service_name, values in procfile.items():
         service_task_definition = create_task_definition(execution_role=execution_role,
                                                          cpu=values['cpu'],
-                                                         memory=values['memory'])
+                                                         memory=values['memory'],
+                                                         task_role=task_role)
 
         # for container in service
         container_definition = create_container_definition(env_vars,

@@ -23,6 +23,7 @@ def main(procfile_path: str, ecr_image: str) -> None:
                                           conf.EXECUTION_ROLE,
                                           conf.ENVIRONMENT,
                                           conf.PROJECT_NAME,
+                                          conf.TASK_ROLE,
                                           ecr_image)
 
     revisions.pop('release', None)
