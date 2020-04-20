@@ -56,6 +56,7 @@ DockerHub automatically tests and builds the image tags: [DockerHub Repo](https:
       ports:
         - 8000:8000
         - 2222:2222
+      disable-logs: true
     service2:
       command: python run_worker.py
       memory: 1024
