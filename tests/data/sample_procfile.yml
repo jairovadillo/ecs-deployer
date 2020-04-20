@@ -4,6 +4,7 @@ web:
   cpu: 256
   ports:
     - 8000:8000
+  disable-logs: true
 release:
   command: python --version
   memory: 1024

@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.1.1 (20-04-2020)
+
+### Changes:
+ - Add disable-logs parameter to procfile.yml
+
 ## 0.1.0 (18-11-2019)
 
 ### Changes:

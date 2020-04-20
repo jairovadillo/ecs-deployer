@@ -16,7 +16,8 @@ def test_read_good_procfile():
             'command': "ddtrace-run gunicorn --pythonpath app,app/apps app.wsgi:application --workers 4 --threads 4 --preload -b 0.0.0.0:8000 --timeout 90",
             'memory': 512,
             'cpu': 256,
-            'ports': ['8000:8000']
+            'ports': ['8000:8000'],
+            'disable-logs': True
         },
         'release': {
             'command': "python --version",

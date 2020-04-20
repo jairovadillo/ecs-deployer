@@ -15,7 +15,7 @@ def create_task_definition(execution_role, memory, cpu, task_role=""):
 
 
 def create_container_definition(env_vars, environment, project_name, container_name, ecr_path, command, cpu=256,
-                                memory=512, ports=None):
+                                memory=512, ports=None, disable_logs=False):
     container_definition_name = "{}-{}".format(environment, project_name)
     log_path = "/ecs/{}-{}-{}".format(environment, project_name, container_name)
 
@@ -37,14 +37,6 @@ def create_container_definition(env_vars, environment, project_name, container_n
         "name": container_definition_name,
         "mountPoints": [],
         "image": ecr_path,
-        "logConfiguration": {
-            "logDriver": "awslogs",
-            "options": {
-                "awslogs-stream-prefix": "ecs",
-                "awslogs-group": log_path,
-                "awslogs-region": "eu-west-1"
-            }
-        },
         "cpu": cpu,
         "memory": memory,
         "portMappings": port_mappings,
@@ -52,6 +44,16 @@ def create_container_definition(env_vars, environment, project_name, container_n
         "essential": True,
         "volumesFrom": []
     }
+
+    if not disable_logs:
+        container_definition["logConfiguration"] = {
+            "logDriver": "awslogs",
+            "options": {
+                "awslogs-stream-prefix": "ecs",
+                "awslogs-group": log_path,
+                "awslogs-region": "eu-west-1"
+            }
+        }
 
     return container_definition
 
