@@ -12,5 +12,4 @@ def get_configuration_vars(host: str, token: str, path: str) -> list:
     else:
         env_vars = data
 
-
     return [{"name": k, "value": v} for k, v in env_vars.items()]
