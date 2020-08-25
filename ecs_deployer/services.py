@@ -5,7 +5,6 @@ import conf
 import yaml
 from aws import AWSWrapper
 from task_definition import create_task_definition, create_container_definition
-from vault import get_configuration_vars
 from yaml import Loader
 
 aws = AWSWrapper.build(conf.ACCOUNT_ID, conf.ROLE_NAME)
@@ -20,11 +19,9 @@ def read_procfile(procfile_path):
         return yaml.load(f, Loader=Loader)
 
 
-def register_task_definitions(procfile_path, vault_config, execution_role, environment, project_name, task_role,
+def register_task_definitions(procfile_path, secrets_manager, execution_role, environment, project_name, task_role,
                               ecr_path):
-    env_vars = {}
-    if all(value for value in vault_config.values()):
-        env_vars = get_configuration_vars(vault_config.get('host'), vault_config.get('token'), vault_config.get('path'))
+    env_vars = secrets_manager.get_configuration_vars() if secrets_manager else {}
 
     procfile = read_procfile(procfile_path)
 
