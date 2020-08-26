@@ -10,9 +10,10 @@ class VaultManager:
         self.token = vault_manager_config['token']
         self.path = vault_manager_config['path']
 
-    def build(self, vault_manager_config):
+    @classmethod
+    def build(cls, vault_manager_config):
         if all(value for value in vault_manager_config.values()):
-            return self.__init__(vault_manager_config)
+            return cls(vault_manager_config)
 
     def get_configuration_vars(self) -> List:
         client = hvac.Client(url=self.host, token=self.token)
