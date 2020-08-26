@@ -1,3 +1,4 @@
+import logging
 from typing import List
 
 import hvac
@@ -5,15 +6,18 @@ import hvac
 
 class VaultManager:
 
-    def __init__(self, vault_manager_config):
-        self.host = vault_manager_config['host']
-        self.token = vault_manager_config['token']
-        self.path = vault_manager_config['path']
+    def __init__(self, host: str, token: str, path: str):
+        self.host = host
+        self.token = token
+        self.path = path
 
     @classmethod
     def build(cls, vault_manager_config):
-        if all(value for value in vault_manager_config.values()):
-            return cls(vault_manager_config)
+        try:
+            return cls(vault_manager_config['host'], vault_manager_config['token'], vault_manager_config['path'])
+        except KeyError as e:
+            logging.error("Missing key for vault manager: {}".format(e))
+            raise e
 
     def get_configuration_vars(self) -> List:
         client = hvac.Client(url=self.host, token=self.token)

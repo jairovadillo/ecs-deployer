@@ -19,8 +19,8 @@ def read_procfile(procfile_path):
         return yaml.load(f, Loader=Loader)
 
 
-def register_task_definitions(procfile_path, secrets_manager, execution_role, environment, project_name, task_role,
-                              ecr_path):
+def register_task_definitions(procfile_path, execution_role, environment, project_name, task_role,
+                              ecr_path, secrets_manager=None):
     env_vars = secrets_manager.get_configuration_vars() if secrets_manager else {}
 
     procfile = read_procfile(procfile_path)
