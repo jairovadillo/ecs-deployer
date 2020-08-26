@@ -17,12 +17,13 @@ logging.getLogger().setLevel(logging.INFO)
 def main(procfile_path: str, ecr_image: str) -> None:
     logging.info("Registering task definitions")
     revisions = register_task_definitions(procfile_path,
-                                          build_secrets_manager({
-                                              'name': 'vault',
-                                              'host': conf.VAULT_HOST,
-                                              'token': conf.VAULT_TOKEN,
-                                              'path': conf.VAULT_PATH
-                                          }),
+                                          build_secrets_manager(
+                                              driver='vault',
+                                              secrets_manager_config={
+                                                  'host': conf.VAULT_HOST,
+                                                  'token': conf.VAULT_TOKEN,
+                                                  'path': conf.VAULT_PATH
+                                              }),
                                           conf.EXECUTION_ROLE,
                                           conf.ENVIRONMENT,
                                           conf.PROJECT_NAME,

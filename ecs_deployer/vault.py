@@ -1,14 +1,20 @@
+from typing import List
+
 import hvac
 
 
 class VaultManager:
 
-    def __init__(self, secrets_manager_config):
-        self.host = secrets_manager_config.get('host')
-        self.token = secrets_manager_config('token')
-        self.path = secrets_manager_config('path')
+    def __init__(self, vault_manager_config):
+        self.host = vault_manager_config['host']
+        self.token = vault_manager_config['token']
+        self.path = vault_manager_config['path']
 
-    def get_configuration_vars(self) -> list:
+    def build(self, vault_manager_config):
+        if all(value for value in vault_manager_config.values()):
+            return self.__init__(vault_manager_config)
+
+    def get_configuration_vars(self) -> List:
         client = hvac.Client(url=self.host, token=self.token)
         response = client.read(self.path)
         data = response.get('data')
