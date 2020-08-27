@@ -1,4 +1,4 @@
-from ecs_deployer.vault import VaultManager
+from .vault import VaultManager
 
 
 def build_secrets_manager(driver, secrets_manager_config):

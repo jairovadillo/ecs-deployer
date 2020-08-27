@@ -3,7 +3,7 @@ import logging
 
 import conf
 
-from ecs_deployer.factories import build_secrets_manager
+from .factories import build_secrets_manager
 from .services import register_task_definitions, run_release_cmd, wait_for_release_task, check_deployment, \
     update_services
 
