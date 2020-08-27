@@ -64,7 +64,7 @@ if __name__ == "__main__":
     args, unknown = parser.parse_known_args()
 
     try:
-        main(procfile_path=args.procfile, ecr_image=args.image)
+        main(procfile_path=args.procfile, ecr_image=args.image, driver=args.driver)
     except Exception as e:
         logging.critical(str(e))
         raise Exception(e)
