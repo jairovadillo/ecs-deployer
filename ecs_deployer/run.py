@@ -10,7 +10,8 @@ from services import register_task_definitions, run_release_cmd, wait_for_releas
 parser = argparse.ArgumentParser(description='Parse params for deployment')
 parser.add_argument("-p", "--procfile", type=str, required=True)
 parser.add_argument("-i", "--image", type=str, required=True)
-parser.add_argument("-d", "--driver", type=str, required=True)
+parser.add_argument("-d", "--driver", type=str, required=True,
+                    help="Secrets provider, ie: vault, aws_secrets_manager")
 
 logging.getLogger().setLevel(logging.INFO)
 
@@ -20,7 +21,10 @@ drivers_config = {
         'token': conf.VAULT_TOKEN,
         'path': conf.VAULT_PATH
     },
-    'aws_secrets_manager': {}
+    'aws_secrets_manager': {
+        'secret_name': conf.AWS_SECRET_NAME,
+        'region_name': conf.AWS_REGION_NAME
+    }
 }
 
 
