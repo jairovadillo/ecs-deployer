@@ -20,7 +20,10 @@ drivers_config = {
         'token': conf.VAULT_TOKEN,
         'path': conf.VAULT_PATH
     },
-    'aws_secrets_manager': {}
+    'aws_secrets_manager': {
+        'secret_name': conf.AWS_SECRET_NAME,
+        'region_name': conf.AWS_REGION_NAME
+    }
 }
 
 
