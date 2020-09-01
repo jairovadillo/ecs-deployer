@@ -23,7 +23,7 @@ class VaultManager(SecretsManager):
         self.path = path
 
     @classmethod
-    def build(cls, vault_manager_config: Dict[str, Any]):
+    def build(cls, vault_manager_config: Dict[str, Any]) -> 'VaultManager':
         try:
             return cls(vault_manager_config['host'], vault_manager_config['token'], vault_manager_config['path'])
         except KeyError as e:
@@ -50,7 +50,7 @@ class AWSSecretManager(SecretsManager):
         self.region_name = region_name
 
     @classmethod
-    def build(cls, manager_config: Dict[str, Any]):
+    def build(cls, manager_config: Dict[str, Any]) -> 'AWSSecretManager':
         try:
             return cls(manager_config['secret_name'], manager_config['region_name'])
         except KeyError as e:
