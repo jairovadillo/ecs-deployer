@@ -1,7 +1,7 @@
 import logging
 import math
 import boto3
-from waiters import GetEventLogWaiter
+
 MAX_N_DESCRIBE_SERVICES = 10
 
 
@@ -12,7 +12,7 @@ class AWSWrapper:
 
     def register_task_definition(self, task_definition, family):
         response = self._client_ecs.register_task_definition(family=family,
-                                                         **task_definition)
+                                                             **task_definition)
 
         return response['taskDefinition']['revision']
 
@@ -22,9 +22,9 @@ class AWSWrapper:
         network_configuration = service_description['services'][0]['networkConfiguration']
 
         response = self._client_ecs.run_task(cluster=cluster,
-                                         taskDefinition=task_definition,
-                                         launchType='FARGATE',
-                                         networkConfiguration=network_configuration)
+                                             taskDefinition=task_definition,
+                                             launchType='FARGATE',
+                                             networkConfiguration=network_configuration)
 
         return response['tasks'][0]['taskArn']
 
@@ -37,10 +37,7 @@ class AWSWrapper:
             if exit_code == 0:
                 return True
             else:
-                task_name = task_description['tasks'][0]['containers'][0].get('name')
-                task_id = task_arn.split('/')[-1]
-                raise Exception('Release task returned error code. Task logs: {}'.format(
-                    self._get_ecs_task_logs(service=task_name, task_id=task_id)))
+                raise Exception(f'Release task with arn={task_arn} returned error code.')
 
         return False
 
@@ -54,8 +51,8 @@ class AWSWrapper:
 
             logging.info("Updating service {} with td: {}".format(service, task_definition))
             self._client_ecs.update_service(cluster=cluster,
-                                        service=service,
-                                        taskDefinition=task_definition)
+                                            service=service,
+                                            taskDefinition=task_definition)
 
     def describe_services(self, cluster, services):
         n_requests = math.ceil(len(services) / MAX_N_DESCRIBE_SERVICES)
@@ -64,7 +61,7 @@ class AWSWrapper:
         for i in range(0, n_requests):
             services_batch = services[i * MAX_N_DESCRIBE_SERVICES:(i + 1) * MAX_N_DESCRIBE_SERVICES]
             aws_response = self._client_ecs.describe_services(cluster=cluster,
-                                                          services=services_batch)
+                                                              services=services_batch)
             response_batch = {
                 service['serviceName']: {
                     deployment['status']: deployment['taskDefinition']
@@ -104,28 +101,3 @@ class AWSWrapper:
         )
 
         return cls(client_ecs=client_ecs, client_logs=client_logs)
-
-    def _get_ecs_task_logs(self, service, task_id):
-        try:
-
-            task_name = f'{service}-release'
-            log_group = f'/ecs/{task_name}'
-            log_stream = f'ecs/{service}/{task_id}'
-
-            GetEventLogWaiter.wait(log_group_name=log_group,
-                                   log_stream_name=log_stream,
-                                   aws_client=self._client_logs
-                                   )
-
-            response = self._client_logs.get_log_events(
-                logGroupName=log_group,
-                logStreamName=log_stream,
-                startFromHead=True
-            )
-        except self._client_logs.exceptions.ClientError as e:
-            return e.response['Error']['Code']
-
-        err_message = ''
-        for event in response['events']:
-            err_message += event['message'] + '\n'
-        return err_message
