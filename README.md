@@ -16,15 +16,13 @@ DockerHub automatically tests and builds the image tags: [DockerHub Repo](https:
 
 ## Preconditions:
 
-- Cluster is already created
+- FARGATE Cluster is already created
 - Services are defined by _PROJECT_NAME-SERVICE-NAME_
 - The provided AWS credentials are used to assume another role only
 - AWS families are defined as _ENV-PROJECT_NAME-SERVICE_NAME_
 - There's a _web_ service
-- Vault is used (Optional in the future -> AWS KMS)
 - Deploys will finish in less than 15 minutes
-- FARGATE is being used
-- The image you want to deploy is already on ECR
+- The docker image you want to deploy is already on ECR (or publicly available on other registry)
 
 ## Running tests
 
@@ -33,9 +31,6 @@ DockerHub automatically tests and builds the image tags: [DockerHub Repo](https:
 ## How to run it?
 
 - (Recommended) Create a `docker.env` file with all the environment variables needed:
-    - _VAULT_HOST_
-    - _VAULT_TOKEN_
-    - _VAULT_PATH_
     - _ENVIRONMENT_
     - _PROJECT_NAME_
     - _AWS_ACCESS_KEY_ID_
@@ -45,6 +40,11 @@ DockerHub automatically tests and builds the image tags: [DockerHub Repo](https:
     - _ROLE_NAME_
     - _EXECUTION_ROLE_
     - _CLUSTER_NAME_
+    - (*) _VAULT_HOST_
+    - (*) _VAULT_TOKEN_
+    - (*) _VAULT_PATH_
+    
+    * optional
     
 - Create a `procfile.yml` following this format:
 
@@ -66,11 +66,15 @@ DockerHub automatically tests and builds the image tags: [DockerHub Repo](https:
       memory: 512
       cpu: 256
     ```
-
-- On your project root run:
+- Deployer parameters are:
+    - `-p` The procfile path
+    - `-i` ECR image path (also works with any public image)
+    - `-d` (Optional) The desired secret manager service (aws_secrets_manager or vault)
+    
+- Example run:
 
     ```bash
-    docker run --rm --env-file=local.env -v $(pwd)/ecs_deployer:/app/ecs_deployer -v $(pwd):/code -it ecs_deployer deploy -p /code/procfile.yml -i << ecr_path>>    
+    docker run --rm --env-file=local.env -v $(pwd):/code -it ecs_deployer deploy -p /code/procfile.yml -i << ecr_path>> -d aws_secrets_manager
     ```
     
 - Enjoy!
