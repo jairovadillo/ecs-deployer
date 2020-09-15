@@ -81,7 +81,7 @@ class AWSWrapper:
     def build(cls, account_id, role_name):
         client_sts = boto3.client('sts')  # AWS settings came from env vars
 
-        role_arn = "arn:aws:iam::{}:role/sso/{}".format(account_id, role_name)
+        role_arn = "arn:aws:iam::{}:role/{}".format(account_id, role_name)
         assumed_role_object = client_sts.assume_role(
             RoleArn=role_arn,
             RoleSessionName="AssumeRoleSession"
