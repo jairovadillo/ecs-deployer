@@ -43,6 +43,7 @@ DockerHub automatically tests and builds the image tags: [DockerHub Repo](https:
     - (*) _VAULT_HOST_
     - (*) _VAULT_TOKEN_
     - (*) _VAULT_PATH_
+    - (*) _AWS_SECRET_NAME_ 
     
     * optional
     
