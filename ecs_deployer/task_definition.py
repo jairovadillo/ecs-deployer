@@ -1,4 +1,4 @@
-def create_task_definition(execution_role, memory, cpu, task_role=""):
+def create_task_definition(execution_role, memory, cpu, task_role=None):
     task_definition = {
         "networkMode": "awsvpc",
         "taskRoleArn": task_role,
@@ -16,8 +16,8 @@ def create_task_definition(execution_role, memory, cpu, task_role=""):
 
 def create_container_definition(env_vars, environment, project_name, container_name, ecr_path, command, cpu=256,
                                 memory=512, ports=None, disable_logs=False):
-    container_definition_name = "{}-{}".format(environment, project_name)
-    log_path = "/ecs/{}-{}-{}".format(environment, project_name, container_name)
+    container_definition_name = f"{project_name}"
+    log_path = f"/ecs/{environment}-{project_name}-{container_name}"
 
     port_mappings = []
 

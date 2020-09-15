@@ -61,7 +61,7 @@ def main(procfile_path: str, ecr_image: str, driver: str) -> None:
     update_services(conf.CLUSTER_NAME, conf.ENVIRONMENT, conf.PROJECT_NAME, revisions)
 
     logging.info("Checking deployment")
-    check_deployment('{}-21b'.format(conf.ENVIRONMENT), conf.PROJECT_NAME, revisions)
+    check_deployment(f'{conf.CLUSTER_NAME}', conf.PROJECT_NAME, revisions)
 
 
 if __name__ == "__main__":
