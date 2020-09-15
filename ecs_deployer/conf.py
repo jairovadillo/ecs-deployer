@@ -19,4 +19,4 @@ CLUSTER_NAME = os.environ['CLUSTER_NAME']
 
 ENVIRONMENT = os.environ['ENVIRONMENT']
 
-TASK_ROLE = os.getenv('TASK_ROLE')
+TASK_ROLE = os.getenv('TASK_ROLE', '')
