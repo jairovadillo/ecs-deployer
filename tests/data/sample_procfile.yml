@@ -5,6 +5,7 @@ web:
   ports:
     - 8000:8000
   disable-logs: true
+  deployment-type: EXTERNAL
 release:
   command: python --version
   memory: 1024

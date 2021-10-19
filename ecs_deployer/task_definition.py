@@ -1,11 +1,11 @@
-def create_task_definition(execution_role, memory, cpu, task_role=''):
+def create_task_definition(execution_role, memory, cpu, deployment_type, task_role='', ):
     task_definition = {
-        "networkMode": "awsvpc",
+        "networkMode": "awsvpc" if deployment_type != 'EXTERNAL' else 'bridge',
         "taskRoleArn": task_role,
         "containerDefinitions": [],
         "executionRoleArn": execution_role,
         "requiresCompatibilities": [
-            "FARGATE"
+            deployment_type
         ],
         "memory": str(memory),
         "cpu": str(cpu)
