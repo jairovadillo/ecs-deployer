@@ -62,6 +62,7 @@ DockerHub automatically tests and builds the image tags: [DockerHub Repo](https:
       command: python run_worker.py
       memory: 1024
       cpu: 512
+      deployment-type: EXTERNAL
     release:
       command: python migrations.py
       memory: 512
