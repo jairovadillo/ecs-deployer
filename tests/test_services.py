@@ -17,7 +17,8 @@ def test_read_good_procfile():
             'memory': 512,
             'cpu': 256,
             'ports': ['8000:8000'],
-            'disable-logs': True
+            'disable-logs': True,
+            'deployment-type': 'EXTERNAL'
         },
         'release': {
             'command': "python --version",

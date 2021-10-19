@@ -31,9 +31,9 @@ def register_task_definitions(procfile_path, execution_role, environment, projec
         service_task_definition = create_task_definition(execution_role=execution_role,
                                                          cpu=values['cpu'],
                                                          memory=values['memory'],
-                                                         task_role=task_role)
+                                                         task_role=task_role,
+                                                         deployment_type=values.get('deployment-type'))
 
-        # for container in service
         container_definition = create_container_definition(env_vars,
                                                            environment,
                                                            project_name,
@@ -46,7 +46,6 @@ def register_task_definitions(procfile_path, execution_role, environment, projec
                                                            disable_logs=values.get('disable-logs', False))
 
         service_task_definition['containerDefinitions'].append(container_definition)
-        # end for
 
         family = "{}-{}-{}".format(environment,
                                    project_name,
