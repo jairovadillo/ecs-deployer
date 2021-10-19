@@ -1,11 +1,11 @@
 import logging
 import time
+import yaml
+from yaml import Loader
 
 import conf
-import yaml
 from aws import AWSWrapper
-from task_definition import create_task_definition, create_container_definition
-from yaml import Loader
+from task_definition import create_container_definition, create_task_definition
 
 aws = AWSWrapper.build(conf.ACCOUNT_ID, conf.ROLE_NAME)
 
@@ -22,11 +22,9 @@ def read_procfile(procfile_path):
 def register_task_definitions(procfile_path, execution_role, environment, project_name, task_role,
                               ecr_path, secrets_manager=None):
     env_vars = secrets_manager.get_configuration_vars() if secrets_manager else {}
-
     procfile = read_procfile(procfile_path)
 
     revisions = {}
-
     for service_name, values in procfile.items():
         service_task_definition = create_task_definition(execution_role=execution_role,
                                                          cpu=values['cpu'],
