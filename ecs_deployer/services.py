@@ -41,7 +41,8 @@ def register_task_definitions(procfile_path, execution_role, environment, projec
                                                            cpu=values['cpu'],
                                                            memory=values['memory'],
                                                            ports=values.get('ports'),
-                                                           disable_logs=values.get('disable-logs', False))
+                                                           disable_logs=values.get('disable-logs', False),
+                                                           region_name=conf.AWS_REGION_NAME)
 
         service_task_definition['containerDefinitions'].append(container_definition)
 
