@@ -16,7 +16,7 @@ def create_task_definition(execution_role, memory, cpu, deployment_type, task_ro
 
 def create_container_definition(env_vars, environment, project_name, container_name, ecr_path, command, cpu=256,
                                 memory=512, ports=None, disable_logs=False, region_name="eu-west-1"):
-    container_definition_name = f"{project_name}"
+    container_definition_name = f"{project_name}-{container_name}"
     log_path = f"/ecs/{environment}-{project_name}-{container_name}"
 
     port_mappings = []
